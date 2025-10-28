@@ -1,0 +1,36 @@
+name: Lighthouse CI
+
+on:
+  pull_request:
+    branches:
+      - "**"
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build site
+        run: npm run build
+
+      - name: Start static server
+        run: npm run serve:ci &
+
+      - name: Wait for server
+        run: npx wait-on http://127.0.0.1:4173
+
+      - name: Run Lighthouse (mobile)
+        run: npx lhci autorun --config=lighthouserc-mobile.json
+
+      - name: Run Lighthouse (desktop)
+        run: npx lhci autorun --config=lighthouserc-desktop.json

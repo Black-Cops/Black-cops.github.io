@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://black-cops-video-agent.example.com/</loc>
+    <lastmod>2024-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://black-cops-video-agent.example.com/assets/images/hero-1280.webp</image:loc>
+      <image:title>Black-Cops Video Agent Hero Image</image:title>
+      <image:caption>AI-assisted media intelligence platform for real-time video analysis</image:caption>
+    </image:image>
+  </url>
+</urlset>
