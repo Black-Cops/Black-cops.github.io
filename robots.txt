@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://black-cops-video-agent.example.com/sitemap.xml

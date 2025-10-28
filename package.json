@@ -1,0 +1,26 @@
+{
+  "name": "black-cops-video-agent",
+  "version": "1.0.0",
+  "description": "AI-powered media intelligence platform with real-time video analytics",
+  "author": "Saqib Sarwar",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "optimize:images": "node tools/optimize-images.mjs",
+    "build:bundle": "node tools/build.mjs",
+    "build": "npm run optimize:images && npm run build:bundle",
+    "serve:ci": "npx http-server dist -p 4173 -c-1 --silent",
+    "lighthouse:mobile": "npx lhci autorun --config=lighthouserc-mobile.json",
+    "lighthouse:desktop": "npx lhci autorun --config=lighthouserc-desktop.json",
+    "lighthouse:all": "npm run lighthouse:mobile && npm run lighthouse:desktop",
+    "test": "npm run build"
+  },
+  "devDependencies": {
+    "@lhci/cli": "^0.13.0",
+    "html-minifier-terser": "^7.2.0",
+    "http-server": "^14.1.1",
+    "sharp": "^0.33.2",
+    "terser": "^5.22.0",
+    "wait-on": "^7.2.0"
+  }
+}
