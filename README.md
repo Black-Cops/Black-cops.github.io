@@ -10,9 +10,7 @@ A full-stack notebook-like AI browser assistant with multi-model streaming chat 
   - Center: Streaming markdown chat
   - Right: Model and persona selection
 - **OpenRouter Integration**: Powered by OpenRouter's free AI models
-- **Default Model**: Claude Sonnet 3.5
 - **Available Models**:
-  - Claude Sonnet 3.5 (default)
   - GPT OSS 20B
   - Qwen3 Coder
   - GLM 4.5 Air
@@ -58,12 +56,6 @@ Edit `.env` and add your OpenRouter API key:
 OPENROUTER_API_KEY=sk-or-v1-your-api-key-here
 ```
 
-**Example with provided key:**
-
-```env
-OPENROUTER_API_KEY=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
-```
-
 ### 3. Install Python dependencies
 
 ```bash
@@ -102,9 +94,9 @@ Returns list of available AI models.
 {
   "models": [
     {
-      "id": "anthropic/claude-3.5-sonnet",
-      "name": "Claude Sonnet 3.5",
-      "provider": "Anthropic",
+      "id": "openai/gpt-oss-20b:free",
+      "name": "GPT OSS 20B",
+      "provider": "OpenAI",
       "default": true
     },
     ...
@@ -122,7 +114,7 @@ Send messages and receive streaming responses.
   "messages": [
     {"role": "user", "content": "Hello!"}
   ],
-  "model": "anthropic/claude-3.5-sonnet",
+  "model": "openai/gpt-oss-20b:free",
   "stream": true,
   "persona": "helpful"
 }
@@ -130,9 +122,9 @@ Send messages and receive streaming responses.
 
 **Response (Server-Sent Events):**
 ```
-data: {"text": "Hello", "model": "anthropic/claude-3.5-sonnet"}
-data: {"text": "!", "model": "anthropic/claude-3.5-sonnet"}
-data: {"done": true, "model": "anthropic/claude-3.5-sonnet"}
+data: {"text": "Hello", "model": "openai/gpt-oss-20b:free"}
+data: {"text": "!", "model": "openai/gpt-oss-20b:free"}
+data: {"done": true, "model": "openai/gpt-oss-20b:free"}
 ```
 
 ### Example curl request
@@ -142,7 +134,7 @@ curl -X POST http://localhost:8000/api/chat \
   -H "Content-Type: application/json" \
   -d '{
     "messages": [{"role": "user", "content": "Write a Python hello world"}],
-    "model": "anthropic/claude-3.5-sonnet",
+    "model": "openai/gpt-oss-20b:free",
     "stream": true,
     "persona": "helpful"
   }'
@@ -155,7 +147,7 @@ curl -X POST http://localhost:8000/api/chat \
   -H "Content-Type: application/json" \
   -d '{
     "messages": [{"role": "user", "content": "Hello!"}],
-    "model": "anthropic/claude-3.5-sonnet",
+    "model": "openai/gpt-oss-20b:free",
     "stream": false,
     "persona": "concise"
   }'
@@ -165,7 +157,7 @@ curl -X POST http://localhost:8000/api/chat \
 ```json
 {
   "text": "Hello! How can I assist you today?",
-  "model": "anthropic/claude-3.5-sonnet"
+  "model": "openai/gpt-oss-20b:free"
 }
 ```
 

@@ -30,16 +30,14 @@ Saki Browser is a full-stack notebook-like AI browser assistant with multi-model
 
 ### Models Integrated
 ✅ All requested models available:
-1. **Claude Sonnet 3.5** (default) - `anthropic/claude-3.5-sonnet`
-2. **GPT OSS 20B** - `openai/gpt-oss-20b:free`
-3. **Qwen3 Coder** - `qwen/qwen3-coder:free`
-4. **GLM 4.5 Air** - `z-ai/glm-4.5-air:free`
-5. **Gemma 3N E2B IT** - `google/gemma-3n-e2b-it:free`
+1. **GPT OSS 20B** - `openai/gpt-oss-20b:free`
+2. **Qwen3 Coder** - `qwen/qwen3-coder:free`
+3. **GLM 4.5 Air** - `z-ai/glm-4.5-air:free`
+4. **Gemma 3N E2B IT** - `google/gemma-3n-e2b-it:free`
 
 ### API Configuration
 ✅ **Environment Variables**
 - `OPENROUTER_API_KEY` configured in `.env`
-- Example key provided: `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`
 - `.env.example` template created
 
 ### Documentation
@@ -88,7 +86,7 @@ Saki Browser is a full-stack notebook-like AI browser assistant with multi-model
 - ✅ Multi-model streaming chat
 - ✅ Server-Sent Events (SSE) for real-time streaming
 - ✅ OpenRouter API integration
-- ✅ Claude Sonnet 4.5 as default model
+- ✅ Free OpenRouter models
 - ✅ Secure code execution preview via code blocks
 - ✅ Dynamic workspace UI
 
@@ -186,7 +184,7 @@ curl -X POST http://localhost:8000/api/chat \
   -H "Content-Type: application/json" \
   -d '{
     "messages": [{"role": "user", "content": "Hello!"}],
-    "model": "anthropic/claude-3.5-sonnet",
+    "model": "openai/gpt-oss-20b:free",
     "stream": true,
     "persona": "helpful"
   }'
@@ -198,7 +196,7 @@ curl -X POST http://localhost:8000/api/chat \
   -H "Content-Type: application/json" \
   -d '{
     "messages": [{"role": "user", "content": "Hello!"}],
-    "model": "anthropic/claude-3.5-sonnet",
+    "model": "openai/gpt-oss-20b:free",
     "stream": false,
     "persona": "concise"
   }'
@@ -251,7 +249,7 @@ curl -X POST http://localhost:8000/api/chat \
 
 ✅ Multi-model streaming chat
 ✅ OpenRouter free models integration
-✅ Claude Sonnet 4.5 as default
+✅ Four free models available
 ✅ Secure code execution preview (via sandboxed display)
 ✅ Atlas/Comet-inspired UI
 ✅ Three-panel layout

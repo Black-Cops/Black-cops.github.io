@@ -67,7 +67,7 @@ Open `index.html` in your web browser:
 ## First Steps
 
 1. **Check Status**: Look for the green indicator next to "Saki Browser" in the header
-2. **Select Model**: Choose from available AI models in the right panel (Claude Sonnet 3.5 is default)
+2. **Select Model**: Choose from available AI models in the right panel
 3. **Choose Persona**: Select Concise, Helpful, or Creative response style
 4. **Start Chatting**: Type a message and press Enter or click Send
 
@@ -99,7 +99,6 @@ When the AI generates code, you can:
 
 ### Models
 Switch between different AI models:
-- **Claude Sonnet 3.5** - Best overall, great reasoning
 - **GPT OSS 20B** - Fast, good for general tasks
 - **Qwen3 Coder** - Specialized for coding
 - **GLM 4.5 Air** - Lightweight, quick responses

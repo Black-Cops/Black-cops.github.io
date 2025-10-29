@@ -25,16 +25,10 @@ OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 
 AVAILABLE_MODELS = [
     {
-        "id": "anthropic/claude-3.5-sonnet",
-        "name": "Claude Sonnet 3.5",
-        "provider": "Anthropic",
-        "default": True
-    },
-    {
         "id": "openai/gpt-oss-20b:free",
         "name": "GPT OSS 20B",
         "provider": "OpenAI",
-        "default": False
+        "default": True
     },
     {
         "id": "qwen/qwen3-coder:free",
@@ -62,7 +56,7 @@ class Message(BaseModel):
 
 class ChatRequest(BaseModel):
     messages: List[Message]
-    model: Optional[str] = "anthropic/claude-3.5-sonnet"
+    model: Optional[str] = "openai/gpt-oss-20b:free"
     stream: Optional[bool] = True
     persona: Optional[str] = "helpful"
 
