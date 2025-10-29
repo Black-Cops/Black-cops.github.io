@@ -1,4 +1,6 @@
-export default function RightPanel({ models, selectedModel, onSelectModel, selectedPersona, onSelectPersona }) {
+import { Search } from 'lucide-react'
+
+export default function RightPanel({ models, selectedModel, onSelectModel, selectedPersona, onSelectPersona, onToggleSearch, isSearchPanelOpen }) {
   const personas = [
     { id: 'concise', name: 'Concise', description: 'Brief, direct answers' },
     { id: 'helpful', name: 'Helpful', description: 'Clear, detailed responses' },
@@ -10,6 +12,28 @@ export default function RightPanel({ models, selectedModel, onSelectModel, selec
   return (
     <div className="w-80 bg-gray-800 border-l border-gray-700 overflow-y-auto scrollbar-thin">
       <div className="p-6 space-y-6">
+        <div>
+          <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">
+            Search
+          </h3>
+          <button
+            onClick={onToggleSearch}
+            className={`w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center gap-3 ${
+              isSearchPanelOpen
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-900 text-gray-300 hover:bg-gray-700'
+            }`}
+          >
+            <Search size={20} />
+            <div>
+              <div className="font-medium">Search Panel</div>
+              <div className="text-sm opacity-75">
+                {isSearchPanelOpen ? 'Hide search panel' : 'Show search panel'}
+              </div>
+            </div>
+          </button>
+        </div>
+
         <div>
           <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">
             Model

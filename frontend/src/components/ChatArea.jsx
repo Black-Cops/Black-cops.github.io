@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
 import { useMutation } from 'convex/react'
 import { api } from '../../convex/_generated/api'
-import { Send, Loader2, MessageSquare } from 'lucide-react'
+import { Send, Loader2, MessageSquare, Search } from 'lucide-react'
 import MessageList from './MessageList'
 
-export default function ChatArea({ workspaceId, workspace, messages, model, persona }) {
+export default function ChatArea({ workspaceId, workspace, messages, model, persona, onToggleSearch }) {
   const [input, setInput] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
   const [streamingMessage, setStreamingMessage] = useState('')
@@ -121,8 +121,19 @@ export default function ChatArea({ workspaceId, workspace, messages, model, pers
   return (
     <div className="flex-1 flex flex-col bg-gray-900">
       <div className="border-b border-gray-700 p-4">
-        <h2 className="text-lg font-semibold">{workspace?.title || 'Workspace'}</h2>
-        <p className="text-sm text-gray-400">Model: {model.split('/').pop()}</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold">{workspace?.title || 'Workspace'}</h2>
+            <p className="text-sm text-gray-400">Model: {model.split('/').pop()}</p>
+          </div>
+          <button
+            onClick={onToggleSearch}
+            className="hidden lg:flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+          >
+            <Search size={16} />
+            Search
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto scrollbar-thin p-6">
