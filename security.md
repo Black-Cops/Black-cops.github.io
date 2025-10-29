@@ -1,253 +1,373 @@
 # Security Guidelines for Saki Browser
 
-This document outlines security best practices for using and maintaining Saki Browser, particularly regarding API key management and data security.
+This document outlines security best practices for deploying and maintaining Saki Browser in production environments.
 
-## API Key Security
+## 🔐 API Key Management
 
-### Storage and Management
+### Storage
 
-1. **Never commit API keys to version control**
-   - Always use `.env` files for storing sensitive credentials
-   - Ensure `.env` is listed in `.gitignore`
-   - Use `.env.example` as a template without real credentials
+**Never commit API keys to version control!**
 
-2. **Environment Variables**
-   - Store the OpenRouter API key in a `.env` file:
-     ```env
-     OPENROUTER_API_KEY=sk-or-v1-your-actual-key-here
-     ```
-   - Never hardcode API keys in source code
-   - Use environment variable loading (python-dotenv) for development
-   - Use secure secret management services in production
+✅ **Do:**
+- Store keys in `.env` files (which are gitignored)
+- Use environment variables in production
+- Use secrets management services (AWS Secrets Manager, GCP Secret Manager, etc.)
 
-3. **File Permissions**
-   - Set restrictive permissions on `.env` files:
-     ```bash
-     chmod 600 .env
-     ```
-   - Ensure only the application user can read the file
+❌ **Don't:**
+- Hardcode keys in source code
+- Commit `.env` files to git
+- Share keys in chat/email
+- Log keys in application logs
 
-### API Key Rotation
+### Environment Variables
 
-To rotate your OpenRouter API key:
+**Backend (.env):**
+```env
+OPENROUTER_API_KEY=sk-or-v1-your-key-here
+ALLOWED_ORIGINS=https://your-frontend.com
+APP_URL=https://your-frontend.com
+```
 
-1. **Generate a New Key**
-   - Log in to your OpenRouter account
-   - Navigate to API Keys section
-   - Generate a new API key
-   - Copy the new key immediately (it won't be shown again)
+**Frontend (.env):**
+```env
+VITE_API_BASE=https://your-backend.onrender.com
+VITE_CONVEX_URL=https://your-convex.cloud
+```
 
-2. **Update Your Environment**
-   ```bash
-   # Edit your .env file
-   nano .env
-   
-   # Update the OPENROUTER_API_KEY value
-   OPENROUTER_API_KEY=sk-or-v1-your-new-key-here
-   ```
+### Key Rotation
 
-3. **Restart the Backend**
-   ```bash
-   # Stop the current backend process (Ctrl+C)
-   # Start it again
-   python main.py
-   ```
+Rotate your OpenRouter API key every 90 days or immediately if compromised:
 
-4. **Revoke the Old Key**
-   - Return to OpenRouter dashboard
-   - Revoke/delete the old API key
-   - Verify the application still works with the new key
+1. **Generate new key** in OpenRouter dashboard
+2. **Update environment variables**:
+   - Render: Dashboard → Environment → Edit
+   - Vercel: Dashboard → Settings → Environment Variables
+3. **Restart services** to apply new keys
+4. **Revoke old key** in OpenRouter dashboard
+5. **Test** that application still works
 
-5. **Update All Deployments**
-   - If running multiple instances, update all of them
-   - Update any CI/CD pipelines or deployment configurations
-   - Update documentation if needed
+### Access Control
 
-### Key Rotation Schedule
+- **Limit key permissions** to minimum required (if provider supports)
+- **Use separate keys** for dev/staging/production
+- **Monitor usage** in OpenRouter dashboard
+- **Set spending limits** to prevent abuse
 
-- **Regular Rotation**: Rotate API keys every 90 days minimum
-- **Immediate Rotation**: Rotate immediately if:
-  - Key is accidentally exposed (committed to git, shared publicly)
-  - Suspicious activity is detected
-  - Team member with key access leaves
-  - Security breach is suspected
+## 🌐 CORS Configuration
 
-## Production Deployment Security
+### Backend CORS Setup
 
-### Backend Security
+Restrict allowed origins to specific domains:
 
-1. **HTTPS Only**
-   - Always use HTTPS in production
-   - Redirect HTTP to HTTPS
-   - Use valid SSL/TLS certificates
+```python
+# main.py
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 
-2. **CORS Configuration**
-   - Restrict `allow_origins` to specific domains:
-     ```python
-     app.add_middleware(
-         CORSMiddleware,
-         allow_origins=["https://yourdomain.com"],
-         allow_credentials=True,
-         allow_methods=["GET", "POST"],
-         allow_headers=["*"],
-     )
-     ```
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,  # Not "*" in production!
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+```
 
-3. **Rate Limiting**
-   - Implement rate limiting to prevent abuse
-   - Use tools like `slowapi` for FastAPI
-   - Set reasonable limits per user/IP
+**Production Configuration:**
+```env
+ALLOWED_ORIGINS=https://your-app.vercel.app,https://www.your-domain.com
+```
 
-4. **Input Validation**
-   - Validate all user inputs
-   - Sanitize messages before forwarding to OpenRouter
-   - Set maximum message length limits
+### Testing CORS
 
-5. **Error Handling**
-   - Don't expose internal errors to clients
-   - Log errors securely without exposing sensitive data
-   - Implement proper error recovery
+```bash
+# Should succeed
+curl -H "Origin: https://your-app.vercel.app" \
+  -H "Access-Control-Request-Method: POST" \
+  -X OPTIONS \
+  https://your-backend.onrender.com/api/chat
 
-### Frontend Security
+# Should fail
+curl -H "Origin: https://malicious-site.com" \
+  -H "Access-Control-Request-Method: POST" \
+  -X OPTIONS \
+  https://your-backend.onrender.com/api/chat
+```
 
-1. **Content Security Policy (CSP)**
-   - Add CSP headers to prevent XSS attacks
-   - Restrict script sources
-   - Prevent inline script execution where possible
+## 🔒 SSE Security Hardening
 
-2. **Data Sanitization**
-   - Sanitize all user inputs
-   - Escape HTML in markdown rendering
-   - Validate code before download
+### Connection Security
 
-3. **Secure Communication**
-   - Always use HTTPS for API calls
-   - Implement request timeouts
-   - Handle network errors gracefully
+**Always use HTTPS in production:**
+- Backend: Render provides HTTPS automatically
+- Frontend: Vercel provides HTTPS automatically
 
-### Monitoring and Logging
+**Implement connection timeouts:**
+```python
+# main.py
+async with httpx.AsyncClient(timeout=60.0) as client:
+    # ... streaming code
+```
 
-1. **Access Logs**
-   - Log all API requests (without sensitive data)
-   - Monitor for unusual patterns
-   - Set up alerts for suspicious activity
+### Rate Limiting
 
-2. **Error Logs**
-   - Log errors with context
-   - Don't log API keys or user data
-   - Implement log rotation
+Implement rate limiting to prevent abuse:
 
-3. **Usage Monitoring**
-   - Track API usage and costs
-   - Set up billing alerts with OpenRouter
-   - Monitor for unexpected usage spikes
+```python
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
-## Data Privacy
+limiter = Limiter(key_func=get_remote_address)
 
-### User Data
+@app.post("/api/chat")
+@limiter.limit("10/minute")
+async def chat(request: ChatRequest):
+    # ... existing code
+```
 
-1. **No Persistent Storage**
-   - Current implementation stores sessions in browser memory only
-   - Sessions are lost on page reload
-   - No server-side session storage
+Install: `pip install slowapi`
 
-2. **Conversation Privacy**
-   - Messages are sent to OpenRouter for processing
-   - Review OpenRouter's privacy policy
-   - Inform users their conversations are processed by AI
+### Input Validation
 
-3. **GDPR Compliance**
-   - Don't collect personal information without consent
-   - Provide clear privacy policy
-   - Implement data deletion on request if storing data
+Validate all user inputs:
 
-### Future Enhancements
+```python
+from pydantic import BaseModel, validator, Field
 
-If implementing persistent storage:
+class ChatRequest(BaseModel):
+    messages: List[Message] = Field(..., max_items=100)
+    model: str = Field(..., min_length=1, max_length=100)
+    stream: bool = True
+    persona: str = "helpful"
+    
+    @validator('messages')
+    def validate_messages(cls, v):
+        if not v:
+            raise ValueError('messages cannot be empty')
+        for msg in v:
+            if len(msg.content) > 10000:
+                raise ValueError('message content too long')
+        return v
+```
 
-1. **Database Security**
-   - Encrypt sensitive data at rest
-   - Use parameterized queries to prevent SQL injection
-   - Implement proper access controls
+### Error Handling
 
-2. **User Authentication**
-   - Use secure authentication methods (OAuth, JWT)
-   - Implement password policies
-   - Enable two-factor authentication
+Don't expose sensitive information in error messages:
 
-3. **Session Management**
-   - Use secure session tokens
-   - Implement session expiration
-   - Invalidate sessions on logout
+```python
+try:
+    # ... code
+except Exception as e:
+    logger.error(f"Internal error: {str(e)}")  # Log internally
+    raise HTTPException(
+        status_code=500,
+        detail="An error occurred"  # Generic message to user
+    )
+```
 
-## Incident Response
+## 🛡️ Convex Security
+
+### Authentication
+
+For production applications with user authentication:
+
+```typescript
+// convex/auth.config.ts
+export default {
+  providers: [
+    {
+      domain: "your-auth0-domain.auth0.com",
+      applicationID: "your-app-id",
+    }
+  ]
+};
+```
+
+### Data Access Control
+
+Implement row-level security:
+
+```typescript
+// convex/workspaces.ts
+export const list = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthorized");
+    }
+    
+    return await ctx.db
+      .query("workspaces")
+      .filter((q) => q.eq(q.field("userId"), identity.subject))
+      .collect();
+  },
+});
+```
+
+### Environment Isolation
+
+Use separate Convex projects for different environments:
+
+- Development: `https://dev-project.convex.cloud`
+- Staging: `https://staging-project.convex.cloud`
+- Production: `https://prod-project.convex.cloud`
+
+## 🚨 Monitoring & Alerting
+
+### Application Monitoring
+
+**Backend (Render):**
+- Enable log persistence
+- Set up error notifications
+- Monitor response times
+- Track API usage
+
+**Frontend (Vercel):**
+- Enable Analytics
+- Monitor Web Vitals
+- Track error rates
+- Set up Sentry or similar
+
+### Security Monitoring
+
+**Watch for:**
+- Unusual API key usage patterns
+- High error rates
+- Slow response times
+- CORS errors from unknown origins
+- Increased traffic from single IPs
+
+**Alert Thresholds:**
+- API calls > 1000/hour
+- Error rate > 5%
+- Response time > 5s
+- Failed auth attempts > 10/hour
+
+### Logging Best Practices
+
+```python
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Good logging
+logger.info(f"Chat request from origin: {request.headers.get('origin')}")
+logger.error(f"API error: {response.status_code}")
+
+# Bad logging - never log sensitive data
+# logger.debug(f"API Key: {OPENROUTER_API_KEY}")  # DON'T DO THIS
+# logger.info(f"User message: {message.content}")  # Privacy concern
+```
+
+## 📋 Security Checklist
+
+### Pre-Deployment
+
+- [ ] Remove all hardcoded secrets
+- [ ] Configure `.gitignore` to exclude `.env`
+- [ ] Set up environment variables in hosting platforms
+- [ ] Configure CORS with specific origins
+- [ ] Enable HTTPS (automatic on Render/Vercel)
+- [ ] Set up rate limiting
+- [ ] Add input validation
+- [ ] Configure error handling
+- [ ] Enable logging
+- [ ] Test CORS configuration
+
+### Post-Deployment
+
+- [ ] Verify HTTPS is working
+- [ ] Test API key is working
+- [ ] Monitor initial traffic
+- [ ] Set up alerts
+- [ ] Review logs
+- [ ] Test rate limiting
+- [ ] Verify CORS restrictions
+- [ ] Check for exposed secrets (with tools like truffleHog)
+
+### Ongoing Maintenance
+
+- [ ] Rotate API keys every 90 days
+- [ ] Review access logs monthly
+- [ ] Update dependencies regularly
+- [ ] Monitor for security advisories
+- [ ] Audit user access
+- [ ] Review CORS configuration
+- [ ] Check rate limits are appropriate
+- [ ] Test backup/recovery procedures
+
+## 🔧 Security Headers
+
+Add security headers to your backend:
+
+```python
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+
+# In production
+if os.getenv("ENVIRONMENT") == "production":
+    app.add_middleware(HTTPSRedirectMiddleware)
+    app.add_middleware(
+        TrustedHostMiddleware,
+        allowed_hosts=["your-backend.onrender.com"]
+    )
+
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
+```
+
+## 🚨 Incident Response
 
 ### If API Key is Compromised
 
-1. **Immediate Actions**
-   - Rotate the API key immediately
-   - Check OpenRouter usage logs for unauthorized access
-   - Review application logs for suspicious activity
+1. **Immediate Actions:**
+   - Revoke compromised key in OpenRouter dashboard
+   - Generate new key
+   - Update environment variables
+   - Restart all services
+   - Monitor for unusual activity
 
-2. **Investigation**
-   - Determine how the key was exposed
-   - Identify affected systems
-   - Document the incident
+2. **Investigation:**
+   - Check git history for exposed keys
+   - Review access logs
+   - Identify how key was exposed
+   - Assess impact
 
-3. **Prevention**
-   - Update security practices
-   - Implement additional safeguards
-   - Train team members on security best practices
+3. **Prevention:**
+   - Update `.gitignore`
+   - Add pre-commit hooks to detect secrets
+   - Train team on security practices
+   - Implement additional monitoring
 
 ### Reporting Security Issues
 
 If you discover a security vulnerability:
 
 1. **Do NOT** open a public issue
-2. Contact the maintainers privately
-3. Provide detailed information about the vulnerability
-4. Allow time for the issue to be fixed before public disclosure
+2. Email security@your-domain.com (or maintainer)
+3. Include:
+   - Description of vulnerability
+   - Steps to reproduce
+   - Potential impact
+   - Suggested fix (if any)
 
-## Security Checklist
+## 📚 Additional Resources
 
-### Development
-- [ ] `.env` file is in `.gitignore`
-- [ ] No API keys in source code
-- [ ] Environment variables are properly loaded
-- [ ] Input validation is implemented
-- [ ] Error messages don't expose sensitive information
-
-### Deployment
-- [ ] HTTPS is enabled
-- [ ] CORS is properly configured
-- [ ] Rate limiting is implemented
-- [ ] Monitoring is set up
-- [ ] Logs are secure and rotated
-- [ ] API key is stored securely (not in code or config files)
-
-### Maintenance
-- [ ] API keys are rotated regularly
-- [ ] Dependencies are updated
-- [ ] Security patches are applied promptly
-- [ ] Access logs are reviewed periodically
-- [ ] Backup and recovery procedures are tested
-
-## Additional Resources
-
-- [OpenRouter Security Best Practices](https://openrouter.ai/docs/security)
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/)
-- [FastAPI Security](https://fastapi.tiangolo.com/tutorial/security/)
-- [MDN Web Security](https://developer.mozilla.org/en-US/docs/Web/Security)
-
-## Updates
-
-This security document should be reviewed and updated:
-- Every 6 months
-- After any security incident
-- When adding new features
-- When changing infrastructure
+- [FastAPI Security Best Practices](https://fastapi.tiangolo.com/tutorial/security/)
+- [React Security Cheatsheet](https://cheatsheetseries.owasp.org/cheatsheets/React_Security_Cheat_Sheet.html)
+- [OpenRouter Security](https://openrouter.ai/docs/security)
+- [Convex Security](https://docs.convex.dev/auth)
 
 ---
 
 **Last Updated:** 2024
-**Version:** 1.0
+**Review Schedule:** Quarterly
