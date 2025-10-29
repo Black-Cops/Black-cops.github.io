@@ -480,12 +480,18 @@
 <body>
     <div class="app-container">
         <header class="header">
-            <h1>
-                <span class="status-indicator" id="statusIndicator"></span>
-                Saki Browser
-            </h1>
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <h1>
+                    <span class="status-indicator" id="statusIndicator"></span>
+                    Saki Browser
+                </h1>
+                <div style="display: flex; gap: 10px;">
+                    <a href="index.html" style="color: var(--accent-primary); text-decoration: none; font-size: 14px; padding: 6px 12px; background: var(--bg-tertiary); border-radius: 6px;">💬 Chat</a>
+                    <a href="agent.html" style="color: var(--text-secondary); text-decoration: none; font-size: 14px; padding: 6px 12px; border-radius: 6px;">🤖 Agent</a>
+                </div>
+            </div>
             <div style="font-size: 12px; color: var(--text-secondary);">
-                AI Notebook Assistant
+                AI Assistant & Browser Automation
             </div>
         </header>
 
@@ -528,6 +534,8 @@
                 <div class="panel-section">
                     <h3>Model</h3>
                     <select class="model-select" id="modelSelect">
+                        <option value="deepseek/deepseek-r1:free">DeepSeek R1 (Default)</option>
+                        <option value="deepseek/deepseek-r1-0528:free">DeepSeek R1 0528</option>
                         <option value="openai/gpt-oss-20b:free">GPT OSS 20B</option>
                         <option value="qwen/qwen3-coder:free">Qwen3 Coder</option>
                         <option value="z-ai/glm-4.5-air:free">GLM 4.5 Air</option>
@@ -563,10 +571,10 @@
                     <h3>Model Info</h3>
                     <div class="model-info" id="modelInfo">
                         <div class="model-info-item">
-                            <span class="model-info-label">Provider:</span> OpenAI
+                            <span class="model-info-label">Provider:</span> DeepSeek
                         </div>
                         <div class="model-info-item">
-                            <span class="model-info-label">Model:</span> GPT OSS 20B
+                            <span class="model-info-label">Model:</span> R1
                         </div>
                         <div class="model-info-item">
                             <span class="model-info-label">Streaming:</span> Enabled
@@ -578,7 +586,7 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'http://localhost:8000';
+        const API_BASE_URL = window.location.origin;
         
         let currentSession = {
             id: 'default',
@@ -586,7 +594,7 @@
             title: 'New Chat'
         };
         let sessions = [currentSession];
-        let selectedModel = 'openai/gpt-oss-20b:free';
+        let selectedModel = 'deepseek/deepseek-r1:free';
         let selectedPersona = 'helpful';
         let isStreaming = false;
 
@@ -600,7 +608,7 @@
 
         async function checkApiStatus() {
             try {
-                const response = await fetch(`${API_BASE_URL}/`);
+                const response = await fetch(`${API_BASE_URL}/api/health`);
                 if (response.ok) {
                     statusIndicator.classList.remove('offline');
                 } else {
@@ -630,6 +638,8 @@
         function updateModelInfo() {
             const modelInfo = document.getElementById('modelInfo');
             const models = {
+                'deepseek/deepseek-r1:free': { provider: 'DeepSeek', name: 'R1' },
+                'deepseek/deepseek-r1-0528:free': { provider: 'DeepSeek', name: 'R1 0528' },
                 'openai/gpt-oss-20b:free': { provider: 'OpenAI', name: 'GPT OSS 20B' },
                 'qwen/qwen3-coder:free': { provider: 'Qwen', name: 'Qwen3 Coder' },
                 'z-ai/glm-4.5-air:free': { provider: 'Z-AI', name: 'GLM 4.5 Air' },

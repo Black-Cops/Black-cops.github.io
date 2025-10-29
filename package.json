@@ -1,0 +1,22 @@
+{
+  "name": "saki-browser-agent",
+  "version": "2.0.0",
+  "description": "Production-ready browser agent with headless Chromium control",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step required'",
+    "test": "node test/e2e.test.js",
+    "test:e2e": "node test/e2e.test.js"
+  },
+  "dependencies": {
+    "@sparticuz/chromium": "^131.0.0",
+    "puppeteer-core": "^23.10.4"
+  },
+  "devDependencies": {
+    "puppeteer": "^23.10.4"
+  },
+  "engines": {
+    "node": ">=18.x"
+  }
+}
