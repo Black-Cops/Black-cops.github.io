@@ -38,8 +38,9 @@ A production-ready notebook-style AI browser assistant with FastAPI backend, Rea
 
 - Python 3.8+
 - Node.js 18+
-- OpenRouter API key ([Get one free](https://openrouter.ai/))
-- Convex account ([Sign up](https://convex.dev/))
+- ✅ **OpenRouter API key**: `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`
+- ✅ **Convex deployment**: `https://neat-sparrow-459.convex.cloud` (Already configured)
+- ✅ **Render**: Connected via integrations
 
 ### Backend Setup
 
