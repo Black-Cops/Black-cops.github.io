@@ -12,6 +12,19 @@ yarn-error.log*
 .eslintcache
 .vercel
 
+# React Native
+android/.gradle/
+android/.idea/
+android/app/build/
+android/build/
+android/local.properties
+ios/Pods/
+ios/build/
+ios/DerivedData/
+ios/*.xcworkspace/xcuserdata
+*.xcuserstate
+*.xcscmblueprint
+
 # Python
 __pycache__/
 *.py[cod]
