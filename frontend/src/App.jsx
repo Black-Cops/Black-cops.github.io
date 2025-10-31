@@ -4,7 +4,8 @@ import { api } from '../convex/_generated/api'
 import Sidebar from './components/Sidebar'
 import ChatArea from './components/ChatArea'
 import RightPanel from './components/RightPanel'
-import { AlertCircle } from 'lucide-react'
+import SearchPanel from './components/SearchPanel'
+import { AlertCircle, Search } from 'lucide-react'
 
 function App() {
   const [currentWorkspaceId, setCurrentWorkspaceId] = useState(null)
@@ -12,6 +13,7 @@ function App() {
   const [selectedPersona, setSelectedPersona] = useState('helpful')
   const [isOnline, setIsOnline] = useState(true)
   const [availableModels, setAvailableModels] = useState([])
+  const [isSearchPanelOpen, setIsSearchPanelOpen] = useState(false)
 
   const workspaces = useQuery(api.workspaces.list)
   const currentWorkspace = useQuery(
@@ -24,6 +26,7 @@ function App() {
   )
 
   const createWorkspace = useMutation(api.workspaces.create)
+  const addMessage = useMutation(api.messages.add)
 
   useEffect(() => {
     const apiBase = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
@@ -58,6 +61,16 @@ function App() {
     setCurrentWorkspaceId(newWorkspace)
   }
 
+  const handleSendSearchToChat = async (message) => {
+    if (!currentWorkspaceId) return
+    
+    await addMessage({
+      workspaceId: currentWorkspaceId,
+      role: 'user',
+      content: message
+    })
+  }
+
   return (
     <div className="flex h-screen bg-gray-900 text-gray-100">
       {!isOnline && (
@@ -74,13 +87,41 @@ function App() {
         onCreateWorkspace={handleCreateWorkspace}
       />
 
-      <ChatArea
-        workspaceId={currentWorkspaceId}
-        workspace={currentWorkspace}
-        messages={messages || []}
-        model={selectedModel}
-        persona={selectedPersona}
-      />
+      <div className="flex-1 flex flex-col lg:flex-row">
+        <div className="flex-1 flex flex-col">
+          {/* Search button for mobile */}
+          <div className="lg:hidden flex p-4 border-b border-gray-700">
+            <button
+              onClick={() => setIsSearchPanelOpen(true)}
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
+            >
+              <Search size={20} />
+              Search
+            </button>
+          </div>
+
+          <ChatArea
+            workspaceId={currentWorkspaceId}
+            workspace={currentWorkspace}
+            messages={messages || []}
+            model={selectedModel}
+            persona={selectedPersona}
+            onToggleSearch={() => setIsSearchPanelOpen(!isSearchPanelOpen)}
+          />
+        </div>
+
+        {/* Search panel for desktop - overlay */}
+        {isSearchPanelOpen && (
+          <div className="hidden lg:block lg:w-96">
+            <SearchPanel
+              isOpen={isSearchPanelOpen}
+              onClose={() => setIsSearchPanelOpen(false)}
+              onSendToChat={handleSendSearchToChat}
+              workspaceId={currentWorkspaceId}
+            />
+          </div>
+        )}
+      </div>
 
       <RightPanel
         models={availableModels}
@@ -88,7 +129,19 @@ function App() {
         onSelectModel={setSelectedModel}
         selectedPersona={selectedPersona}
         onSelectPersona={setSelectedPersona}
+        onToggleSearch={() => setIsSearchPanelOpen(!isSearchPanelOpen)}
+        isSearchPanelOpen={isSearchPanelOpen}
       />
+
+      {/* Mobile search panel overlay */}
+      <div className="lg:hidden">
+        <SearchPanel
+          isOpen={isSearchPanelOpen}
+          onClose={() => setIsSearchPanelOpen(false)}
+          onSendToChat={handleSendSearchToChat}
+          workspaceId={currentWorkspaceId}
+        />
+      </div>
     </div>
   )
 }
